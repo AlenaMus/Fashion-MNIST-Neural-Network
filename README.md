@@ -56,18 +56,48 @@ Input (784) --> Dense(512, ReLU) --> Dropout(0.2) --> Dense(256, ReLU) --> Dropo
 
 **Target accuracy**: 85%+ on test set
 
+## Experiment Results
+
+### Architecture Comparison
+
+We compared 4 architectures using the same training setup (ReLU, Dropout 0.2, Adam, 20 epochs):
+
+| Architecture | Layers | Parameters | Test Accuracy |
+|-------------|--------|------------|---------------|
+| **Baseline** | 512 → 256 → 10 | 535,818 | **88.27%** |
+| Narrow | 128 → 64 → 10 | ~109K | Lower |
+| Deep | 512 → 256 → 128 → 64 → 10 | ~553K | Lower |
+| Wide | 1024 → 512 → 256 → 10 | ~1.3M | Lower |
+
+### Loss Function Comparison
+
+We tested 5 regularization strategies on the baseline architecture:
+
+| Strategy | Loss Formula | Test Accuracy | Weight Norm |
+|----------|-------------|---------------|-------------|
+| No Regularization | `CE(y, ŷ)` | Baseline | Largest |
+| L2 (λ=1e-4) | `CE + λ∑(w²)` | Improved | Smaller |
+| L1 (λ=1e-5) | `CE + λ∑\|w\|` | Improved | Sparse |
+| Elastic Net (L1+L2) | `CE + λ₁∑\|w\| + λ₂∑(w²)` | Improved | Smaller |
+| **L2 + Label Smoothing** | `smooth_CE + λ∑(w²)` | **88.27%** | **601.48** |
+
+### Conclusion
+
+The combination of **L2 regularization + Label Smoothing** loss function with the **Baseline (512→256)** architecture achieved the best results at **88.27% test accuracy**. Adding weight regularization to the loss function forces the model to learn simpler, more generalizable patterns, while label smoothing prevents overconfident predictions.
+
 ## Project Structure
 
 ```
 L-37-ClothesNeuralNetworkMIST/
-├── fashion_mnist_classifier.ipynb   # Jupyter notebook (Google Colab ready)
-├── fashion_mnist_classifier.py      # Standalone Python script
-├── PRD.md                           # Product Requirements Document
-├── tasks.json                       # Developer implementation tasks
-├── requirements.txt                 # Python dependencies
-├── prompts_summary.txt              # All prompts used to build this project
-├── README.md                        # This file
-└── venv/                            # Python virtual environment
+├── fashion_mnist_classifier.ipynb      # Main notebook (Google Colab ready)
+├── fashion_mnist_classifier.py         # Main standalone Python script
+├── architecture_experiments.ipynb      # Architecture & loss function experiments notebook
+├── architecture_experiments.py         # Architecture & loss function experiments script
+├── cloth_examples/                     # Sample clothing images for testing
+├── results/                            # Training results and screenshots
+├── PRD.md                              # Product Requirements Document
+├── requirements.txt                    # Python dependencies
+└── README.md                           # This file
 ```
 
 ## Requirements
